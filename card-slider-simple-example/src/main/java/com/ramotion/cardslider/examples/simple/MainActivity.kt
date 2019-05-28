@@ -20,16 +20,13 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewTreeObserver
-import android.widget.ImageSwitcher
-import android.widget.ImageView
-import android.widget.TextSwitcher
-import android.widget.TextView
-import android.widget.ViewSwitcher
+import android.widget.*
 
 import com.ramotion.cardslider.CardSliderLayoutManager
 import com.ramotion.cardslider.CardSnapHelper
 import com.ramotion.cardslider.examples.simple.cards.SliderAdapter
 import com.ramotion.cardslider.examples.simple.utils.DecodeBitmapTask
+import com.ramotion.cardslider.examples.simple.utils.DecodeBitmapTask.Listener
 
 import java.util.Random
 
@@ -63,7 +60,7 @@ class MainActivity : AppCompatActivity() {
   private var currentPosition: Int = 0
 
   private var decodeMapBitmapTask: DecodeBitmapTask? = null
-  private var mapLoadListener: DecodeBitmapTask.Listener? = null
+  private var mapLoadListener: Listener? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -125,10 +122,14 @@ class MainActivity : AppCompatActivity() {
     mapSwitcher!!.setFactory(ImageViewFactory())
     mapSwitcher!!.setImageResource(maps[0])
 
-    mapLoadListener = DecodeBitmapTask.Listener { bitmap ->
-      (mapSwitcher!!.nextView as ImageView).setImageBitmap(bitmap)
-      mapSwitcher!!.showNext()
+    class Listener : DecodeBitmapTask.Listener {
+      override fun onPostExecuted(bitmap: Bitmap) {
+        (mapSwitcher!!.nextView as ImageView).setImageBitmap(bitmap)
+        mapSwitcher!!.showNext()
+      }
     }
+
+    mapLoadListener = Listener()
   }
 
   private fun initCountryText() {
@@ -180,11 +181,11 @@ class MainActivity : AppCompatActivity() {
     val invisibleText: TextView
     val visibleText: TextView
     if (country1TextView!!.alpha > country2TextView!!.alpha) {
-      visibleText = country1TextView
-      invisibleText = country2TextView
+      visibleText = country1TextView as TextView
+      invisibleText = country2TextView as TextView
     } else {
-      visibleText = country2TextView
-      invisibleText = country1TextView
+      visibleText = country2TextView as TextView
+      invisibleText = country1TextView as TextView
     }
 
     val vOffset: Int
@@ -200,8 +201,8 @@ class MainActivity : AppCompatActivity() {
 
     val iAlpha = ObjectAnimator.ofFloat(invisibleText, "alpha", 1f)
     val vAlpha = ObjectAnimator.ofFloat(visibleText, "alpha", 0f)
-    val iX = ObjectAnimator.ofFloat(invisibleText, "x", countryOffset1)
-    val vX = ObjectAnimator.ofFloat(visibleText, "x", vOffset)
+    val iX = ObjectAnimator.ofFloat(invisibleText, "x", countryOffset1.toFloat())
+    val vX = ObjectAnimator.ofFloat(visibleText, "x", vOffset.toFloat())
 
     val animSet = AnimatorSet()
     animSet.playTogether(iAlpha, vAlpha, iX, vX)
@@ -295,7 +296,7 @@ class MainActivity : AppCompatActivity() {
       val imageView = ImageView(this@MainActivity)
       imageView.scaleType = ImageView.ScaleType.CENTER_CROP
 
-      val lp = ImageSwitcher.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+      val lp = FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
       imageView.layoutParams = lp
 
       return imageView

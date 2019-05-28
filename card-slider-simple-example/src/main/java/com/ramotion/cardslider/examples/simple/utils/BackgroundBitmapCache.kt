@@ -40,7 +40,7 @@ internal class BackgroundBitmapCache {
         instance = BackgroundBitmapCache()
         instance!!.init()
       }
-      return instance
+      return instance as BackgroundBitmapCache
     }
   }
 
